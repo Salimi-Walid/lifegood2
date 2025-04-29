@@ -16,7 +16,7 @@ class _GoogleNavBarState extends State<GoogleNavBar> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    Hobise(),
+    Hobbies(),
     Notes(),
     Evolution(),
     ParamitreUser(),

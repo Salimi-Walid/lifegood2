@@ -6,12 +6,19 @@ class ContainerHobies extends StatefulWidget {
   final String date;
   final String titel;
   final String descreption;
+  final VoidCallback? ontape;
+  final bool initialIsDone;
+  final Function(bool) onDoneChanged;
+
   const ContainerHobies({
     super.key,
     required this.selection,
     required this.date,
     required this.titel,
     required this.descreption,
+    required this.ontape,
+    this.initialIsDone = false, // Default value
+    required this.onDoneChanged,
   });
 
   @override
@@ -19,7 +26,15 @@ class ContainerHobies extends StatefulWidget {
 }
 
 class _ContainerHobiesState extends State<ContainerHobies> {
-  bool isdone = false;
+  late bool isdone;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with the passed-in value
+    isdone = widget.initialIsDone;
+  }
+
   @override
   Widget build(BuildContext context) {
     List colors = [
@@ -44,6 +59,8 @@ class _ContainerHobiesState extends State<ContainerHobies> {
                 onPressed: () {
                   setState(() {
                     isdone = !isdone;
+                    // Call the callback to update the parent
+                    widget.onDoneChanged(isdone);
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -61,8 +78,8 @@ class _ContainerHobiesState extends State<ContainerHobies> {
                         ? Icon(Icons.check, size: 20)
                         : Icon(Icons.add, size: 20),
                     isdone
-                        ? Text("done", style: TextStyle(fontSize: 15))
-                        : Text("I dowet", style: TextStyle(fontSize: 15)),
+                        ? Text("Done", style: TextStyle(fontSize: 15))
+                        : Text("I do it", style: TextStyle(fontSize: 15)),
                   ],
                 ),
               ),
@@ -70,9 +87,8 @@ class _ContainerHobiesState extends State<ContainerHobies> {
             Positioned(
               right: 0,
               top: 0,
-
               child: GestureDetector(
-                onTap: () {},
+                onTap: widget.ontape,
                 child: Container(
                   height: 50,
                   width: 50,
@@ -99,7 +115,7 @@ class _ContainerHobiesState extends State<ContainerHobies> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.sports_soccer),
+                          _getCategoryIcon(widget.selection),
                           SizedBox(width: 8),
                           Text(
                             "${widget.selection}",
@@ -108,7 +124,10 @@ class _ContainerHobiesState extends State<ContainerHobies> {
                         ],
                       ),
                       SizedBox(width: 30),
-                      Text(widget.date, style: TextStyle(fontSize: 13)),
+                      Text(
+                        _formatDate(widget.date),
+                        style: TextStyle(fontSize: 13),
+                      ),
                     ],
                   ),
                   Text(widget.titel, style: TextStyle(fontSize: 20)),
@@ -122,5 +141,31 @@ class _ContainerHobiesState extends State<ContainerHobies> {
         ),
       ),
     );
+  }
+
+  // Get appropriate icon for each category
+  Widget _getCategoryIcon(String? category) {
+    switch (category) {
+      case 'Sport':
+        return Icon(Icons.sports_soccer);
+      case 'Music':
+        return Icon(Icons.music_note);
+      case 'Reading':
+        return Icon(Icons.book);
+      case 'Coding':
+        return Icon(Icons.code);
+      default:
+        return Icon(Icons.category);
+    }
+  }
+
+  // Format the ISO date string to a more readable format
+  String _formatDate(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      return "${date.day}/${date.month}/${date.year}";
+    } catch (e) {
+      return isoString;
+    }
   }
 }
