@@ -4,7 +4,15 @@ import 'dart:math';
 import 'package:lifegood/screen/notes_page.dart';
 
 class ContainerNotes extends StatelessWidget {
-  const ContainerNotes({super.key});
+  final String titel;
+  final String descreption;
+  final String date;
+  const ContainerNotes({
+    super.key,
+    required this.date,
+    required this.descreption,
+    required this.titel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +42,20 @@ class ContainerNotes extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Titel", style: TextStyle(fontSize: 20)),
+                Text(
+                  titel,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 10),
-                Text("Descreption", style: TextStyle(fontSize: 15)),
+                Text(
+                  descreption,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 10),
-                Text("Date 20 jui 2025", style: TextStyle(fontSize: 10)),
+                Text(
+                  date,
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                ),
               ],
             ),
           ),

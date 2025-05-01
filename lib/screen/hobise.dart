@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:lifegood/model/container_hobies.dart';
 import 'package:lifegood/database/database_hobies.dart';
+import 'package:lifegood/model/container_hobies.dart';
 
 class Hobbies extends StatefulWidget {
   const Hobbies({super.key});
@@ -11,71 +10,49 @@ class Hobbies extends StatefulWidget {
 }
 
 class _HobbiesState extends State<Hobbies> {
-  // Variables
   bool isReminderEnabled = false;
   bool isDone = false;
   TimeOfDay? selectedTime;
-  final DatabaseHobies db = DatabaseHobies();
   final List<String> categories = ['Sport', 'Music', 'Reading', 'Coding'];
   String? selectedCategory;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final myBox = Hive.box('hobbies');
+
+  List<Map<String, dynamic>> hobbies = [];
 
   @override
   void initState() {
     super.initState();
-    // Initialize data
     _loadHobbiesData();
   }
 
-  // Load hobbies data from Hive
-  void _loadHobbiesData() {
-    try {
-      if (myBox.get('HOBBIES') == null) {
-        db.createnitialdata();
-      } else {
-        db.loadData();
-      }
-      // Force refresh of UI after loading data
-      if (mounted) {
-        setState(() {});
-      }
-    } catch (e) {
-      debugPrint('Error loading hobbies data: $e');
-    }
+  Future<void> _loadHobbiesData() async {
+    final data = await SQLiteHobbies.instance.getHobbies();
+    setState(() {
+      hobbies = data;
+    });
   }
 
   @override
   void dispose() {
-    // Clean up controllers
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
 
-  // Delete a hobby
-  void deleteHobby(int index) {
-    setState(() {
-      db.hobies.removeAt(index);
-      db.updatedData();
-    });
+  Future<void> deleteHobby(int id) async {
+    await SQLiteHobbies.instance.deleteHobby(id);
+    await _loadHobbiesData();
   }
 
-  // Update the "done" status of a hobby
-  void updateHobbyDoneStatus(int index, bool isDone) {
-    setState(() {
-      // Make sure the hobby at this index exists and has enough elements
-      if (index < db.hobies.length && db.hobies[index].length >= 7) {
-        db.hobies[index][6] = isDone; // Update the "done" status
-        db.updatedData(); // Save changes to database
-      }
-    });
+  Future<void> updateHobbyDoneStatus(int id, bool isDone) async {
+    final hobby = hobbies.firstWhere((h) => h['id'] == id);
+    hobby['isDone'] = isDone ? 1 : 0;
+    await SQLiteHobbies.instance.updateHobby(id, hobby);
+    await _loadHobbiesData();
   }
 
-  // Show dialog to add new hobby
   void showInputDialog() {
-    // Reset values before showing dialog
     _titleController.clear();
     _descriptionController.clear();
     selectedCategory = null;
@@ -136,16 +113,13 @@ class _HobbiesState extends State<Hobbies> {
                       onChanged: (value) {
                         setStateDialog(() {
                           isReminderEnabled = value;
-                          if (!value) {
-                            selectedTime = null;
-                          }
+                          if (!value) selectedTime = null;
                         });
                       },
                       activeTrackColor: Colors.lightGreenAccent,
                       activeColor: Colors.green,
                     ),
-                    if (isReminderEnabled) ...[
-                      const SizedBox(height: 10),
+                    if (isReminderEnabled)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -157,7 +131,7 @@ class _HobbiesState extends State<Hobbies> {
                           ),
                           ElevatedButton(
                             onPressed: () async {
-                              final TimeOfDay? time = await showTimePicker(
+                              final time = await showTimePicker(
                                 context: context,
                                 initialTime: TimeOfDay.now(),
                               );
@@ -171,26 +145,21 @@ class _HobbiesState extends State<Hobbies> {
                           ),
                         ],
                       ),
-                    ],
                   ],
                 ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // Validate input
+                  onPressed: () async {
                     if (selectedCategory == null ||
                         _titleController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Please fill in all required fields'),
-                          duration: Duration(seconds: 2),
                         ),
                       );
                       return;
@@ -198,37 +167,28 @@ class _HobbiesState extends State<Hobbies> {
 
                     final now = DateTime.now();
                     final dateNow = now.toIso8601String();
-                    String reminderTime;
+                    final reminderTime =
+                        (isReminderEnabled && selectedTime != null)
+                            ? DateTime(
+                              now.year,
+                              now.month,
+                              now.day,
+                              selectedTime!.hour,
+                              selectedTime!.minute,
+                            ).toIso8601String()
+                            : dateNow;
 
-                    if (isReminderEnabled && selectedTime != null) {
-                      final reminderDateTime = DateTime(
-                        now.year,
-                        now.month,
-                        now.day,
-                        selectedTime!.hour,
-                        selectedTime!.minute,
-                      );
-                      reminderTime = reminderDateTime.toIso8601String();
-                    } else {
-                      reminderTime = dateNow;
-                    }
-
-                    setState(() {
-                      db.hobies.add([
-                        selectedCategory,
-                        _titleController.text,
-                        _descriptionController.text,
-                        dateNow,
-                        isReminderEnabled,
-                        reminderTime,
-                        isDone, // Always false for new hobbies
-                      ]);
-                      db.updatedData(); // Save to database
+                    await SQLiteHobbies.instance.insertHobby({
+                      'category': selectedCategory,
+                      'title': _titleController.text,
+                      'description': _descriptionController.text,
+                      'date': dateNow,
+                      'isReminderEnabled': isReminderEnabled ? 1 : 0,
+                      'reminderTime': reminderTime,
+                      'isDone': 0,
                     });
 
-                    // Clear fields and close dialog
-                    _titleController.clear();
-                    _descriptionController.clear();
+                    await _loadHobbiesData();
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
@@ -260,7 +220,7 @@ class _HobbiesState extends State<Hobbies> {
         leading: const Icon(Icons.sports_gymnastics, color: Colors.black),
       ),
       body:
-          db.hobies.isEmpty
+          hobbies.isEmpty
               ? const Center(
                 child: Text(
                   "No hobbies added yet.\nTap + to add your first hobby!",
@@ -269,24 +229,20 @@ class _HobbiesState extends State<Hobbies> {
                 ),
               )
               : ListView.builder(
-                itemCount: db.hobies.length,
+                itemCount: hobbies.length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
-                  // Get the "isDone" value, default to false if not available
-                  bool isDone = false;
-                  if (db.hobies[index].length >= 7) {
-                    isDone = db.hobies[index][6] ?? false;
-                  }
-
+                  final hobby = hobbies[index];
                   return ContainerHobies(
-                    selection: db.hobies[index][0],
-                    titel: db.hobies[index][1],
-                    descreption: db.hobies[index][2],
-                    date: db.hobies[index][3],
-                    initialIsDone: isDone,
-                    ontape: () => deleteHobby(index),
+                    selection: hobby['category'],
+                    titel: hobby['title'],
+                    descreption: hobby['description'],
+                    date: hobby['date'],
+                    initialIsDone: hobby['isDone'] == 1,
+                    ontape: () => deleteHobby(hobby['id']),
                     onDoneChanged:
-                        (newValue) => updateHobbyDoneStatus(index, newValue),
+                        (newValue) =>
+                            updateHobbyDoneStatus(hobby['id'], newValue),
                   );
                 },
               ),
