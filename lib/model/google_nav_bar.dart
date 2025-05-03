@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:lifegood/screen/evolution.dart';
+import 'package:lifegood/screen/todo.dart';
 import 'package:lifegood/screen/hobise.dart';
 import 'package:lifegood/screen/notes.dart';
 import 'package:lifegood/screen/paramitre_user.dart';
@@ -18,7 +18,7 @@ class _GoogleNavBarState extends State<GoogleNavBar> {
   static const List<Widget> _widgetOptions = <Widget>[
     Hobbies(),
     Notes(),
-    Evolution(),
+    Todo(),
     ParamitreUser(),
   ];
 

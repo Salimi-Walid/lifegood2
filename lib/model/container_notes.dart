@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-import 'package:lifegood/screen/notes_page.dart';
-
 class ContainerNotes extends StatelessWidget {
   final String titel;
   final String descreption;
@@ -25,39 +23,31 @@ class ContainerNotes extends StatelessWidget {
     ];
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => NotesPage()),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: colors[Random().nextInt(colors.length)],
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titel,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  descreption,
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  date,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors[Random().nextInt(colors.length)],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                titel,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text(
+                descreption,
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text(
+                date,
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
         ),
       ),

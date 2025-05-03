@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 class NotesPage extends StatefulWidget {
-  const NotesPage({super.key});
+  final String titel;
+  final String date;
+  final String descreption;
+  final VoidCallback? ontapspeak;
+  const NotesPage({
+    super.key,
+    required this.date,
+    required this.descreption,
+    required this.titel,
+    required this.ontapspeak,
+  });
 
   @override
   State<NotesPage> createState() => _NotesPageState();
@@ -11,12 +20,6 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   String descreption = 'hay my name walid i need mony';
   bool ischangebg = false;
-  final FlutterTts flutterTts = FlutterTts();
-  Future _speak() async {
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setSpeechRate(0.9);
-    await flutterTts.speak(descreption);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +31,7 @@ class _NotesPageState extends State<NotesPage> {
         ),
         actions: [
           GestureDetector(
-            onTap: () => _speak(),
+            onTap: widget.ontapspeak,
             child: Icon(Icons.play_arrow, size: 28),
           ),
           SizedBox(width: 15),
@@ -41,7 +44,6 @@ class _NotesPageState extends State<NotesPage> {
             child: Icon(Icons.photo_camera_back, size: 28),
           ),
           SizedBox(width: 15),
-          Icon(Icons.more_vert, size: 28),
         ],
       ),
       body: Padding(
@@ -49,10 +51,19 @@ class _NotesPageState extends State<NotesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('titel', style: TextStyle(fontSize: 40)),
-            Text('date', style: TextStyle(fontSize: 10)),
+            Text(
+              widget.titel,
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              widget.date,
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 15),
-            Text('Descreption', style: TextStyle(fontSize: 20)),
+            Text(
+              descreption,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),

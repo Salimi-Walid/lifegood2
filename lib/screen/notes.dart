@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lifegood/database/database_notes.dart';
 import 'package:intl/intl.dart';
 import 'package:lifegood/model/container_notes.dart';
+import 'package:lifegood/screen/notes_page.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class Notes extends StatefulWidget {
   const Notes({super.key});
@@ -16,6 +18,12 @@ class _NotesState extends State<Notes> {
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final FlutterTts flutterTts = FlutterTts();
+  Future _speak(String descreption) async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setSpeechRate(0.9);
+    await flutterTts.speak(descreption);
+  }
 
   Future<void> loadNotes() async {
     final data = await db.getNotes();
@@ -85,8 +93,6 @@ class _NotesState extends State<Notes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-
       floatingActionButton: FloatingActionButton(
         onPressed: showAddNoteDialog,
         backgroundColor: Color.fromARGB(255, 233, 165, 165),
@@ -112,10 +118,26 @@ class _NotesState extends State<Notes> {
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
-                  return ContainerNotes(
-                    titel: note['title'],
-                    descreption: note['description'],
-                    date: note['date'],
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (BuildContext context) => NotesPage(
+                                ontapspeak: () => _speak(note['description']),
+                                date: note['title'],
+                                descreption: note['description'],
+                                titel: note['date'],
+                              ),
+                        ),
+                      );
+                    },
+                    child: ContainerNotes(
+                      titel: note['title'],
+                      descreption: note['description'],
+                      date: note['date'],
+                    ),
                   );
                 },
               ),

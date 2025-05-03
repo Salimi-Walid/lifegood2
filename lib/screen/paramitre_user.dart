@@ -1,4 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+class ThemeProvider with ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme(bool isDarkMode) {
+    _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
+}
 
 class ParamitreUser extends StatefulWidget {
   const ParamitreUser({super.key});
@@ -8,20 +20,26 @@ class ParamitreUser extends StatefulWidget {
 }
 
 class _ParamitreUserState extends State<ParamitreUser> {
-  bool isswitched = false;
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
+      appBar: AppBar(title: const Text('User Settings')),
       body: Center(
-        child: Switch(
-          value: isswitched,
-          onChanged: (value) {
-            setState(() {
-              isswitched = value;
-            });
-          },
-          activeTrackColor: Colors.lightGreenAccent,
-          activeColor: Colors.green,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Dark Theme'),
+            Switch(
+              value: themeProvider.themeMode == ThemeMode.dark,
+              onChanged: (value) {
+                themeProvider.toggleTheme(value);
+              },
+              activeTrackColor: Colors.lightGreenAccent,
+              activeColor: Colors.green,
+            ),
+          ],
         ),
       ),
     );

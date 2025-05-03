@@ -207,7 +207,6 @@ class _HobbiesState extends State<Hobbies> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton(
         onPressed: showInputDialog,
         backgroundColor: const Color.fromARGB(255, 255, 133, 133),
